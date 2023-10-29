@@ -1,0 +1,50 @@
+version: '3.8'
+services:
+  mongodb:
+    container_name: mongodb
+    image: 'mongo'
+    volumes:
+      - data:/data/db
+    #environment:
+     # - MONGO_INITDB_ROOT_USERNAME: max
+    #  - MONGO_INITDB_ROOT_PASSWORD: secret
+      # a moze i ovako da se napise
+      #- MONGO_INITDB_ROOT_USERNAME=max
+      #-MONGO_INITDB_ROOT_PASSWORD=secret
+    env_file: 
+      - ./env/mongo.env
+  backend:
+    container_name: backend
+    build: ./backend
+    
+    # drugi nacin da se pokrene build
+    #build: 
+      #context: ./backend
+      #dockerfile: Dockerfile
+      #arg:
+      # some-arg: 1
+    ports:
+      - '81:80'
+    volumes:
+      - logs:/app/logs
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - ./env/backend.env
+    depends_on:
+      - mongodb
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./frontend/src:/app/src
+    # ove dve komande sluze za interactive mode odnosno -it flag
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
+volumes:
+  data:
+  logs:
